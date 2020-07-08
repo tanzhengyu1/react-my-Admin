@@ -27,7 +27,7 @@ const data = [
     key: 1,
     name: 'John Brown',
     age: 32,
-    address: 'New York No. 1 Lake Park',
+    address: 'New York No. 1 Lake ',
     description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
   },
   {
