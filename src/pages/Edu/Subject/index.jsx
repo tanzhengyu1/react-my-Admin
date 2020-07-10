@@ -1,9 +1,13 @@
 import React, { Component } from "react";
 import { Button, Table } from 'antd';
 import { PlusSquareOutlined,FormOutlined,DeleteOutlined } from '@ant-design/icons'
+
+import {connect} from 'react-redux'
+ 
 import './index.less'
+import {getSubjectList} from './redux'
 const columns = [
-  { title: '分类名称', dataIndex: 'name', key: 'name' },
+  { title: '分类名称', dataIndex: 'title', key: 'name' },
 
   {
     title: '操作',
@@ -22,38 +26,39 @@ const columns = [
     width:200
   },
 ];
-const data = [
-  {
-    key: 1,
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake ',
-    description: 'My name is John Brown, I am 32 years old, living in New York No. 1 Lake Park.',
-  },
-  {
-    key: 2,
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    description: 'My name is Jim Green, I am 42 years old, living in London No. 1 Lake Park.',
-  },
-  {
-    key: 3,
-    name: 'Not Expandable',
-    age: 29,
-    address: 'Jiangsu No. 1 Lake Park',
-    description: 'This not expandable',
-  },
-  {
-    key: 4,
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-    description: 'My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.',
-  },
-];
-export default class Subject extends Component {
+@connect(
+  state=>({subjectList:state.subjectList}),{getSubjectList})
+ class Subject extends Component {
+  currentPage=1
+    // state={
+    //   subject:{}
+    // }
+    componentDidMount(){  
+      // this.getComponentDidMount()
+      this.props.getSubjectList(1,10)
+    }
+
+
+    // getComponentDidMount=async (page,limit)=>{
+    //   const res =await reqGetSubjectList(page,limit)
+    //   this.setState({
+    //     subject:res
+    //   })
+    // }
+
+    handleChang=(page,limit)=>{
+      this.props.getSubjectList(page,limit)
+      this.currentPage=page
+    }
+    handleSizeChang=(page,limit)=>{
+
+      this.props.getSubjectList(page,limit)
+      this.currentPage=page
+    }
+
+    
   render() {
+    console.log(this.props.subjectList)
     return (
       <div className='subject'>
         <Button type="primary" className='subject-btn'>
@@ -66,10 +71,24 @@ export default class Subject extends Component {
             expandedRowRender: record => <p style={{ margin: 0 }}>{record.description}</p>,
             rowExpandable: record => record.name !== 'Not Expandable',
           }}
-          dataSource={data}
+          
+          dataSource={this.props.subjectList.items}
+          
+          rowKey='_id'
+          pagination={{
+            total: this.props.subjectList.total, //total表示数据总数
+            showQuickJumper: true, //是否显示快速跳转
+            showSizeChanger: true, // 是否显示修改每页显示数据数量
+            pageSizeOptions:['5','10','15'], //设置每天显示数据数量的配置项
+            defaultPageSize:5, //每页默认显示数据条数 默认是10,
+            onChange:this.handleChang,
+            onShowSizeChange:this.handleSizeChang,
+            current:this.currentPage
+          }}
         />
       </div>
 
     )
   }
 }
+export default Subject
