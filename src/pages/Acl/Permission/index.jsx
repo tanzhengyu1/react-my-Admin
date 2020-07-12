@@ -74,7 +74,7 @@ class Permission extends Component {
           <PlusOutlined />
         </Button>
       </Tooltip>,
-      <Tooltip title="更新菜单" key="1">
+      <Tooltip title="更新菜单" key="1" >
         <Button
           type="primary"
           style={{ marginRight: 10 }}

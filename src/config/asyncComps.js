@@ -18,11 +18,15 @@ const AddOrUpdateRole = () =>
 const Chapter = () => lazy(() => import("@pages/Edu/Chapter"));
 const Comment = () => lazy(() => import("@pages/Edu/Comment"));
 const Course = () => lazy(() => import("@pages/Edu/Course"));
+
 const Teacher = () => lazy(() => import("@pages/Edu/Teacher"));
+const Subject = ()=>lazy(()=>import('@pages/Edu/Subject'));
+const AddSubject=()=>lazy(()=>import('@pages/Edu/Subject/components/AddSbject'))
+
 const Settings = () => lazy(() => import("@pages/User/Settings"));
 const Center = () => lazy(() => import("@pages/User/Center"));
 //  const Text = ()=>lazy(()=>import('@pages/Edu/Text'))
- const Subject = ()=>lazy(()=>import('@pages/Edu/Subject'));
+
 export default {
   Admin,
   User,
@@ -39,5 +43,6 @@ export default {
   Settings,
   Center,
   // Text,
-  Subject
+  Subject,
+  AddSubject
 };
