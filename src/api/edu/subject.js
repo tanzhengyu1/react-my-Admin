@@ -32,3 +32,31 @@ export function reqAddSubjectList(title,parentId) {
     }
   });
 }
+//更新课程分类数据
+export function reqUpdetaSubjectList(title,id) {
+  //request返回的时一i个promise
+return request({
+  url: `${BASE_URL}/update`,
+  method: "PUT",
+  data:{
+    title,
+    id
+  }
+});
+}
+//删除课程 分类的title
+
+export function reqDeleteSubjectList(id) {
+  //request返回的时一i个promise
+return request({
+  url: `${BASE_URL}/remove/${id}`,
+  method: "DELETE",
+});
+}
+
+
+
+
+
+
+

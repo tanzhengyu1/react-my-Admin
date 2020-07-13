@@ -1,9 +1,10 @@
 import {
-  reqGetSubjectList,reqGetTwoSubjectList
+  reqGetSubjectList,reqGetTwoSubjectList,
+  reqUpdetaSubjectList
 } from "@api/edu/subject";
 
 import {
-  GET_SUBJECT_LIST,GET_TWOSUBJECT_LIST
+  GET_SUBJECT_LIST,GET_TWOSUBJECT_LIST,UPDETA_SUBJECT
 } from "./constants";
 
 //获取一级分类 --同步
@@ -34,3 +35,22 @@ export const getTowSubjectList = parentId => {
     });
   };
 };
+
+//获取更新 分类的同步action
+const UpdetaSubjectListSync = data => ({
+  type: UPDETA_SUBJECT,
+  data
+});
+//获取更新分类的异步action
+export const UpdetaSubjectList = (title,id) => {
+  console.log('请求成功')
+  return dispatch => {
+   return reqUpdetaSubjectList(title,id).then(res => {
+      dispatch(UpdetaSubjectListSync({title,id}));
+    return res
+    });
+  };
+};
+
+
+

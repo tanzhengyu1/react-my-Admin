@@ -14,17 +14,17 @@ import {
   RedoOutlined,
   SettingOutlined,
   InfoCircleOutlined,
-} from "@ant-design/icons";
-import dayjs from "dayjs";
+} from "@ant-design/icons"
+import dayjs from "dayjs"
 
-import relativeTime from "dayjs/plugin/relativeTime";
+import relativeTime from "dayjs/plugin/relativeTime"
 
-import { connect } from "react-redux";
-import SearchForm from "./SearchForm";
+import { connect } from "react-redux"
+import SearchForm from "./SearchForm"
 
 import "./index.less";
 
-dayjs.extend(relativeTime);
+dayjs.extend(relativeTime)
 
 const data = [
   {

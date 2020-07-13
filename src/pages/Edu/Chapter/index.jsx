@@ -8,27 +8,28 @@ import {
   PlusOutlined,
   FormOutlined,
   DeleteOutlined,
-} from "@ant-design/icons";
-import dayjs from "dayjs";
+} from "@ant-design/icons"
+import dayjs from "dayjs"
 
-import relativeTime from "dayjs/plugin/relativeTime";
+import relativeTime from "dayjs/plugin/relativeTime"
 
-import { connect } from "react-redux";
-import SearchForm from "./SearchForm";
+import { connect } from "react-redux"
+import SearchForm from "./SearchForm"
+import {getLessonList} from './redux'
+import "./index.less"
 
-import "./index.less";
-
-dayjs.extend(relativeTime);
+dayjs.extend(relativeTime)
 
 @connect(
-  (state) => ({
+  state => ({
     // courseList: state.courseList
     // permissionValueList: filterPermissions(
     //   state.course.permissionValueList,
     //   "Course"
     // )
-  })
-  // { getcourseList }
+    chapterList:state.chapterList
+  }),
+   { getLessonList }
 )
 class Chapter extends Component {
   state = {
@@ -38,7 +39,7 @@ class Chapter extends Component {
     selectedRowKeys: [],
   };
 
-  showImgModal = (img) => {
+  showImgModal = img => {
     return () => {
       this.setState({
         previewVisible: true,
@@ -75,7 +76,7 @@ class Chapter extends Component {
   getcourseList = ({ page, limit, Coursename, nickName }) => {
     return this.props
       .getcourseList({ page, limit, Coursename, nickName })
-      .then((total) => {
+      .then(total => {
         if (total === 0) {
           message.warning("暂无用户列表数据");
           return;
@@ -89,7 +90,16 @@ class Chapter extends Component {
       selectedRowKeys,
     });
   };
-
+  // 定义点击展开按钮 展现当前课程里面的的小课程处理函数
+  //expand 参数为 当前点击的状态是否被点击 record 参数为当前被点击这行的数据
+  handleClickExpand=(expand,record)=>{
+    console.log(expand,record)
+    //如果当前状态被点击,那么就发送请求
+    if(expand){
+      //发送请求获取数据
+      this.props.getLessonList(record._id)
+    }
+  }
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
 
@@ -101,7 +111,7 @@ class Chapter extends Component {
       {
         title: "是否免费",
         dataIndex: "free",
-        render: (isFree) => {
+        render: isFree => {
           return isFree === true ? "是" : isFree === false ? "否" : "";
         },
       },
@@ -109,7 +119,7 @@ class Chapter extends Component {
         title: "操作",
         width: 300,
         fixed: "right",
-        render: (data) => {
+        render: data => {
           if ("free" in data) {
             return (
               <div>
@@ -290,8 +300,11 @@ class Chapter extends Component {
           <Table
             rowSelection={rowSelection}
             columns={columns}
-            dataSource={data}
-            rowKey="id"
+            dataSource={this.props.chapterList.items}
+            rowKey="_id"
+            expandable={{
+              onExpand:this.handleClickExpand
+            }}
           />
         </div>
 

@@ -1,5 +1,5 @@
 import {
-  GET_SUBJECT_LIST,GET_TWOSUBJECT_LIST
+  GET_SUBJECT_LIST,GET_TWOSUBJECT_LIST,UPDETA_SUBJECT
 } from "./constants";
 
 const initSbujectList = {
@@ -32,7 +32,22 @@ export default function subjectList(prevState = initSbujectList, action) {
           }
         })
         
+      }   
+      return {
+        ...prevState
       }
+      case UPDETA_SUBJECT:     
+      prevState.items.forEach(subject=>{
+        if(subject._id===action.data.id){
+          subject.title=action.data.title
+          return
+        }
+        subject.children.forEach(secSubject=>{
+          if(secSubject._id===action.data.id){
+            secSubject.title=action.data.title
+          }
+        })
+      })
       return {
         ...prevState
       }
