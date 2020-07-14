@@ -100,6 +100,9 @@ class Chapter extends Component {
       this.props.getLessonList(record._id)
     }
   }
+  handleAddLesson=data=>()=>{
+    this.props.history.push('/edu/chapter/addlesson',data)
+  }
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
 
@@ -120,12 +123,12 @@ class Chapter extends Component {
         width: 300,
         fixed: "right",
         render: data => {
-          if ("free" in data) {
+          // if ("free" in data) {
             return (
               <div>
-                <Tooltip title="查看详情">
-                  <Button>
-                    <SettingOutlined />
+                <Tooltip title="新增课时">
+                  <Button type="primary" onClick={this.handleAddLesson(data)}>
+                    <PlusOutlined />
                   </Button>
                 </Tooltip>
                 <Tooltip title="更新章节">
@@ -142,7 +145,7 @@ class Chapter extends Component {
             );
           }
         },
-      },
+      // },
     ];
 
     const data = [
