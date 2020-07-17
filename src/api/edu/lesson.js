@@ -26,4 +26,13 @@ export function reqGetLessonList(chapterId){
                 }
             })
         }
-        
+    export function reqBatchDelLesson(lessonIds){
+        return request({
+            url:`${BASE_URL}/batchRemove`,
+            method:'DELETE',
+            data:{
+                idList:lessonIds
+            }
+        })
+    }
+

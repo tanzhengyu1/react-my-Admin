@@ -31,8 +31,11 @@ const layout = {
 
 // ,{getSubjectList})
 class index extends Component {
+    //点击添加按钮,表单校验成功之后的回调函数
     onFinish= async values=>{
         console.log(values)
+        //需要发送请求,添加课时
+        //通过 父组件传过来的data 数据里面 通过props 有chapterId 
         const chapterId= this.props.location.state._id
         const data={
             ...values,

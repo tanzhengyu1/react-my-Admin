@@ -10,12 +10,13 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons"
 import dayjs from "dayjs"
-
+import Player from 'griffith'
+import  screenfull from 'screenfull'
 import relativeTime from "dayjs/plugin/relativeTime"
 
 import { connect } from "react-redux"
 import SearchForm from "./SearchForm"
-import {getLessonList} from './redux'
+import { getLessonList,chapterList,batchDelChapter,batchDellesson } from './redux'
 import "./index.less"
 
 dayjs.extend(relativeTime)
@@ -27,25 +28,25 @@ dayjs.extend(relativeTime)
     //   state.course.permissionValueList,
     //   "Course"
     // )
-    chapterList:state.chapterList
+    chapterList: state.chapterList
   }),
-   { getLessonList }
+  { getLessonList,batchDelChapter,batchDellesson }
 )
 class Chapter extends Component {
   state = {
     searchLoading: false,
-    previewVisible: false,
+    previewVisible: false,//控制modal窗口是否显示
     previewImage: "",
     selectedRowKeys: [],
+    video: ''
   };
+//video 是要游览的视频路径
+  showModal = video => () => {
+    this.setState({
+      previewVisible: true,
+      video
+    });
 
-  showImgModal = img => {
-    return () => {
-      this.setState({
-        previewVisible: true,
-        previewImage: img,
-      });
-    };
   };
 
   handleImgModal = () => {
@@ -92,16 +93,63 @@ class Chapter extends Component {
   };
   // 定义点击展开按钮 展现当前课程里面的的小课程处理函数
   //expand 参数为 当前点击的状态是否被点击 record 参数为当前被点击这行的数据
-  handleClickExpand=(expand,record)=>{
-    console.log(expand,record)
+  handleClickExpand = (expand, record) => {
+    console.log(expand, record)
     //如果当前状态被点击,那么就发送请求
-    if(expand){
+    if (expand) {
       //发送请求获取数据
       this.props.getLessonList(record._id)
     }
   }
-  handleAddLesson=data=>()=>{
-    this.props.history.push('/edu/chapter/addlesson',data)
+  //点击跳转到新增课时的页面
+  handleAddLesson = data => () => {
+    this.props.history.push('/edu/chapter/addlesson', data)
+  }
+//批量删除按钮的事件处理函数
+  handleBatchDel = () => {
+    //弹出comfirm对话框
+    Modal.confirm({
+      title: '确定要删除吗?',
+      onOk: async () => {
+      // selectedRowKeys 里面存的是所有选中的课时,和章节
+      //所以在批量删除之前要分清哪些是课时id,哪些是章节id
+        let chapterIds = [] //存储 章节id
+        let lessonIds = []// 存储课时id
+        //拿到所有被选中的的id
+        let selecteRowKeys = this.state.selectedRowKeys
+        //拿到章节数据
+        let chapterList = this.props.chapterList.items
+        //遍历章节数据
+        chapterList.forEach(chapter => {
+          //拿到章节数据的id
+          let chapterId = chapter._id
+          //从selectedRowKeys里面找是否有章节id,如果有就拿出来
+          let index = selecteRowKeys.indexOf(chapterId)
+    
+          if (index > -1) {
+            //说明找到了章节id,然后从selectedRowKeys 把这些数据切割
+            //splice会修改原来的数据,并且 返回切割的新的数组
+            //此时newArr 里面存的就是 章节的id
+            let newArr = selecteRowKeys.splice(index, 1)
+            //往 chapterIds添加 章节id
+            chapterIds.push(newArr[0])
+          }
+        })
+        //因为splice 切割后的数据 里面就只剩下 课时的id了
+        lessonIds = [...selecteRowKeys]
+        console.log(chapterIds)
+        console.log(selecteRowKeys)
+        //调用异步action,删除章节 ,删除课时
+        await this.props.batchDelChapter(chapterIds)
+        await this.props.batchDellesson(lessonIds)
+        //删除成功后提示框
+        message.success('批量删除成功')
+      }
+    })
+  }
+  //点击全弄按钮,页面变成全屏
+  handlescreenfull=()=>{
+    screenfull.toggle()
   }
   render() {
     const { previewVisible, previewImage, selectedRowKeys } = this.state;
@@ -114,8 +162,26 @@ class Chapter extends Component {
       {
         title: "是否免费",
         dataIndex: "free",
+        //如果没有写dataIndex 那么render接收到的就是这一行的数据
+        //如果写了,那么render函数接收的就是这一行数据中对应的dataIndex那个属性的值
+        //每一行都有free这个属性
+        //render 里面第一个参数是当前这行的数据
+        //利用三元表达式 判断数据 显示状态 -->章节不展现是否免费,课时才显示
         render: isFree => {
           return isFree === true ? "是" : isFree === false ? "否" : "";
+        }
+      },
+      {
+        title: "视频",
+        //value表示的就是这一行的数据 
+        render: value => {
+          //如果是章节数据,不展示任何内容
+          //如果是课时数据,判断是否免费,是免费才可以游览按钮
+          //如果没有free属性 不显示 游览按钮
+          //如果课时的free是false,返回的是und
+          if (!value.free) return
+          //否则 显示 游览按钮
+          return <Button onClick={this.showModal(value.video)}>预览</Button>
         },
       },
       {
@@ -124,104 +190,50 @@ class Chapter extends Component {
         fixed: "right",
         render: data => {
           // if ("free" in data) {
-            return (
-              <div>
+            //其实下面的data.free 就是用来判断当前数据是章节还是课时
+          return (
+            <div>
+              {/* 章节数据中是没有free属性的,所以新增课时按钮的操作会执行 ,课时数据才有free */}
+              {/* 因为课时数据中的free false,所以返回的也是Und,所以课时是不会显示新增按钮 */}
+              {data.free === undefined && (
                 <Tooltip title="新增课时">
-                  <Button type="primary" onClick={this.handleAddLesson(data)}>
+                  <Button type="primary"
+                    onClick={this.handleAddLesson(data)}
+                    style={{ marginRight: 10 }}
+                  >
                     <PlusOutlined />
                   </Button>
                 </Tooltip>
-                <Tooltip title="更新章节">
-                  <Button type="primary" style={{ margin: "0 10px" }}>
-                    <FormOutlined />
-                  </Button>
-                </Tooltip>
-                <Tooltip title="删除章节">
-                  <Button type="danger">
-                    <DeleteOutlined />
-                  </Button>
-                </Tooltip>
-              </div>
-            );
-          }
-        },
+              )}
+            {/* 如果是课时,就显示更新课时,否则反之 */}
+              <Tooltip title={data.free === undefined ? '更新章节' : '更新课时'}>
+                <Button type="primary" style={{ marginRight: 10 }}>
+                  <FormOutlined />
+                </Button>
+              </Tooltip>
+               {/* 如果是课时,就显示删除课时,否则反之 */}
+              <Tooltip title={data.free === undefined ? '删除章节' : '删除课时'}>
+                <Button type="danger">
+                  <DeleteOutlined />
+                </Button>
+              </Tooltip>
+            </div>
+          );
+        }
+      },
       // },
     ];
-
-    const data = [
-      {
-        id: "111",
-        title: "第一章节",
-        children: [
-          {
-            id: "1",
-            title: "第一课时",
-            free: false,
-            videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-          },
-          {
-            id: "2",
-            title: "第二课时",
-            free: true,
-            videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-          },
-          {
-            id: "3",
-            title: "第三课时",
-            free: true,
-            videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-          },
-        ],
-      },
-      {
-        id: "222",
-        title: "第二章节",
-        children: [
-          {
-            id: "4",
-            title: "第一课时",
-            free: false,
-            videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-          },
-          {
-            id: "5",
-            title: "第二课时",
-            free: true,
-            videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-          },
-          {
-            id: "6",
-            title: "第三课时",
-            free: true,
-            videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-          },
-        ],
-      },
-      {
-        id: "333",
-        title: "第三章节",
-        children: [
-          {
-            id: "1192252824606289921",
-            title: "第一课时",
-            free: false,
-            videoSourceId: "756cf06db9cb4f30be85a9758b19c645",
-          },
-          {
-            id: "1192628092797730818",
-            title: "第二课时",
-            free: true,
-            videoSourceId: "2a02d726622f4c7089d44cb993c531e1",
-          },
-          {
-            id: "1192632495013380097",
-            title: "第三课时",
-            free: true,
-            videoSourceId: "4e560c892fdf4fa2b42e0671aa42fa9d",
-          },
-        ],
-      },
-    ];
+    const sources = {
+      hd: {
+        play_url: this.state.video,
+        bitrate: 1,
+        duration: 1000,
+        format: '',
+        height: 500,
+        size: 160000,
+        width: 500
+      }
+    }
 
     const rowSelection = {
       selectedRowKeys,
@@ -274,10 +286,13 @@ class Chapter extends Component {
                 <PlusOutlined />
                 <span>新增</span>
               </Button>
-              <Button type="danger" style={{ marginRight: 10 }}>
+              <Button type="danger"
+                style={{ marginRight: 10 }}
+                onClick={this.handleBatchDel}
+              >
                 <span>批量删除</span>
               </Button>
-              <Tooltip title="全屏" className="course-table-btn">
+              <Tooltip title="全屏" className="course-table-btn" onClick={this.handlescreenfull}>
                 <FullscreenOutlined />
               </Tooltip>
               <Tooltip title="刷新" className="course-table-btn">
@@ -306,17 +321,27 @@ class Chapter extends Component {
             dataSource={this.props.chapterList.items}
             rowKey="_id"
             expandable={{
-              onExpand:this.handleClickExpand
+              onExpand: this.handleClickExpand
             }}
           />
         </div>
 
         <Modal
+          title='视频'
           visible={previewVisible}
-          footer={null}
+
           onCancel={this.handleImgModal}
+          footer={null}
+          destroyOnClose={true}
         >
-          <img alt="example" style={{ width: "100%" }} src={previewImage} />
+          <Player
+            sources={sources}
+            id={'1'}
+            cover={'http://localhost:3000/logo512.png'}
+            duration={1000}
+          >
+          </Player>
+
         </Modal>
       </div>
     );

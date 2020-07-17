@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Layout, Menu, Dropdown, Breadcrumb } from "antd";
+import { Layout, Menu, Dropdown, Breadcrumb,Button } from "antd";
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -17,7 +17,8 @@ import { logout } from "@redux/actions/login";
 import { resetUser } from "../../components/Authorized/redux";
 import logo from "@assets/images/logo.png";
 import { findPathIndex } from "@utils/tools";
-
+//导入pubsuub 
+import PubsSub from 'pubsub-js'
 // 引入组件公共样式
 import "@assets/css/common.less";
 import "./index.less";
@@ -37,6 +38,7 @@ const { Header, Sider, Content } = Layout;
 class PrimaryLayout extends Component {
   state = {
     collapsed: false,
+    currentLuanguage: window.navigator.language==='zh-CN'?'zh':'en'
   };
 
   toggle = () => {
@@ -75,7 +77,13 @@ class PrimaryLayout extends Component {
       </Menu.Item>
     </Menu>
   );
-
+  
+    handleChangeLanguage=language=>()=>{
+      PubsSub.publish('LANGUAGE',language)
+      this.setState({
+        currentLuanguage:language
+      })
+    }
   selectRoute = (routes = [], pathname) => {
     for (let i = 0; i < routes.length; i++) {
       const route = routes[i];
@@ -140,7 +148,20 @@ class PrimaryLayout extends Component {
     } = this.props;
 
     const route = this.selectRoute(routes, pathname);
-
+   const intlMunu=(
+      <Menu>
+      <Menu.Item>
+        <Button type={this.state.currentLuanguage==='zh' ? 'link':'text' } 
+        onClick={this.handleChangeLanguage('zh')}
+        >中文</Button>
+      </Menu.Item>
+      <Menu.Item>
+      <Button type={this.state.currentLuanguage==='en' ? 'link':'text' }
+       onClick={this.handleChangeLanguage('en')}
+      >English</Button>
+      </Menu.Item>
+      </Menu>
+    )
     return (
       <Layout className="layout">
         <Sider trigger={null} collapsible collapsed={collapsed}>
@@ -170,7 +191,10 @@ class PrimaryLayout extends Component {
                   </span>
                 </Dropdown>
                 <span className="site-layout-lang">
-                  <GlobalOutlined />
+                  <Dropdown overlay={intlMunu}>
+                     <GlobalOutlined />
+                  </Dropdown>
+                 
                 </span>
               </span>
             </span>

@@ -10,6 +10,15 @@ export function reqGetChapterList({page,limit,courseId}){
         }
     })
 }
+export function reqBatchDelChapter(chapterIds){
+    return request({
+        url:`${BASE_URL}/batchRemove`,
+        method:'DELETE',
+        params:{
+            idList:chapterIds
+        }
+    })
+}
 
 
 

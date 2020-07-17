@@ -53,7 +53,13 @@ return request({
   method: "DELETE",
 });
 }
-
+//获取一级分类课程的分类数据
+export function reqALLSubjectList(){
+  return request({
+    url:`${BASE_URL}`,
+    method:'GET'
+  })
+}
 
 
 
