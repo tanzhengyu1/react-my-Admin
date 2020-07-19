@@ -23,6 +23,7 @@ function SearchForm(props) {
 const [subjectList,setSubjectList]= useState([])
 //利用useEffECT,实现组件挂载获取数据
 useEffect(()=>{
+  let isUnmount =false
   async function fetchData(){
      // 注意: 这样的写法,会导致获取完讲师数据,再请求课程分类.会比较耗时
       // 所以要使用Promise.all来实现
@@ -42,11 +43,15 @@ useEffect(()=>{
         isLeaf:false //false 表示有子数据,true 表示没有子数据
       }
     })
-    //把数据赋值给tearchList,subjectList此时 初始化状态里面已经有数据了
-    setTeacherList(teachers)
+    if(!isUnmount){
+       setTeacherList(teachers)
     setSubjectList(options)
+    }
+    //把数据赋值给tearchList,subjectList此时 初始化状态里面已经有数据了
+   
   }
   fetchData()
+  return ()=>isUnmount=true
 },[])
 
 // selectedOptions  获取 当前点击数据的所有数据

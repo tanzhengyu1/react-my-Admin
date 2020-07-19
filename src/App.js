@@ -16,8 +16,10 @@ import PubsSub from 'pubsub-js'
 import "./assets/css/reset.css";
 
 function App() {
+
   const [locale,setLocale]  = useState('zh')
   useEffect(()=>{
+    
    const token = PubsSub.subscribe('LANGUAGE',(message,data)=>{
       setLocale(data)
       return ()=>{
