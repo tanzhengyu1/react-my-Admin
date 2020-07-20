@@ -146,6 +146,7 @@ class PrimaryLayout extends Component {
       user,
       location: { pathname },
     } = this.props;
+    console.log(123,user)
 
     const route = this.selectRoute(routes, pathname);
    const intlMunu=(
