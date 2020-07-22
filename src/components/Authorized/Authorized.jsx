@@ -1,49 +1,33 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
-
-import Loading from "../Loading";
-import { getAccessRoutes, getUserInfo } from "./redux";
-import { updateLoading } from "@redux/actions/loading";
-
-@connect(
-  (state) => ({
-    user: state.user,
-    loading: state.loading,
-  }),
-  { getAccessRoutes, getUserInfo, updateLoading }
-)
+import React, { Component } from 'react';
+import {connect} from 'react-redux'
+import {getUserInfo,getUserMenu} from './redux'
+import Loading from '@comps/Loading'
+@connect(null,
+  {getUserInfo,getUserMenu}
+  )
 class Authorized extends Component {
-  componentDidMount() {
-    // 发送请求，请求roles和permissionList
-    const {
-      user: { roles, permissionList },
-      getUserInfo,
-      getAccessRoutes,
-      updateLoading,
-    } = this.props;
-    
-    const promises = [];
-
-    if (!roles.length) {
-      promises.push(getUserInfo());
-    }
-
-    if (!permissionList.length) {
-      promises.push(getAccessRoutes());
-    }
-
-    Promise.all(promises).finally(() => {
-      updateLoading(false);
-    });
+  state={
+    //其实就是设置一个标识,使其先挂载再render渲染
+    loading:true
   }
-
+ async componentDidMount(){
+   //这样一条一条的获取请求太慢了
+    // this.props.getUserInfo()
+    // this.props.getUserMenu()
+    let {getUserInfo,getUserMenu} =this.props
+    console.log(this.props)
+    //数据一定存在了redux中
+    await Promise.all([getUserInfo(),getUserMenu()])
+    this.setState({
+      //修改状态
+      loading:false
+    })
+  }
   render() {
-    const {
-      user: { permissionList },
-      render,
-    } = this.props;
-
-    return <Loading>{render(permissionList)}</Loading>;
+   let {loading} = this.state
+  //  加载成功后 就展示渲染PrimartLayout组件
+  //否则就展示loading组件
+   return loading ? <Loading></Loading> : this.props.render()
   }
 }
 
